@@ -244,3 +244,20 @@ function renderResult() {
 }
 
 render();
+
+(function selfCheck() {
+  const check = (cond, msg) => { if (!cond) console.error("Hollowbrook Files self-check FAILED:", msg); };
+  const gallery = CASES.find(c => c.id === "gallery");
+  check(applyCluesUpTo(gallery, 0).size === gallery.suspects.length, "no clues revealed -> everyone still suspected");
+  check(applyCluesUpTo(gallery, gallery.clues.length).has(gallery.solution), "solution is still suspected after all clues");
+
+  const partner = CASES.find(c => c.id === "partner");
+  const afterEliminate = applyCluesUpTo(partner, 2);
+  check(!afterEliminate.has("gil"), "clue 2 eliminates gil (no access on record)");
+  const afterReinstate = applyCluesUpTo(partner, 3);
+  check(afterReinstate.has("gil"), "clue 3 reinstates gil (off-books server access)");
+  check(applyCluesUpTo(partner, partner.clues.length).has(partner.solution), "final suspected set still contains the true solution");
+
+  CASES.forEach(c => check(c.suspects.some(s => s.id === c.solution), `${c.id}: solution matches a real suspect id`));
+  console.log("Hollowbrook Files self-check passed.");
+})();
